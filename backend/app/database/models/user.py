@@ -1,10 +1,14 @@
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime,String,func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import mapped_column,Mapped
+from sqlalchemy.orm import mapped_column,Mapped,relationship
 from ..base_class import Base
+
+if TYPE_CHECKING:
+    from .resume import Resume
 
 class User(Base):
     __tablename__="users"
@@ -48,4 +52,8 @@ class User(Base):
         DateTime(timezone=True),
         nullable=True,
         default=None,
+    )
+
+    resumes:Mapped[list["Resume"]]=relationship(
+        back_populates="users"
     )
