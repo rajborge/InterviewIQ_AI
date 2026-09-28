@@ -7,5 +7,6 @@ from ..database.models.resume_projects import ResumeProject
 from ..database.models.resume_education import ResumeEducation
 from ..database.models.interview import Interview
 from ..database.models.question import Question
+from ..database.models.answer import Answer
 
-__all__=["Base","User","Resume","ResumeSkills","ResumeExperience","ResumeProject","ResumeEducation","Interview","Question"]
+__all__=["Base","User","Resume","ResumeSkills","ResumeExperience","ResumeProject","ResumeEducation","Interview","Question","Answer"]

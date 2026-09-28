@@ -13,7 +13,7 @@ from .enums import Difficulty, QuestionSource, RoundType, db_enum
 
 if TYPE_CHECKING:
     from .interview import Interview
-
+    from .answer import Answer
 
 class Question(Base):
     __tablename__ = "questions"
@@ -116,9 +116,15 @@ class Question(Base):
         back_populates="follow_ups",
         remote_side="Question.id",
     )
-    
+
     follow_ups: Mapped[list["Question"]] = relationship(
         back_populates="parent",
         cascade="all, delete-orphan",
         order_by="Question.follow_up_number",
+    )
+
+    answer: Mapped["Answer | None"] = relationship(
+        back_populates="question",
+        cascade="all, delete-orphan",
+        uselist=False,
     )
