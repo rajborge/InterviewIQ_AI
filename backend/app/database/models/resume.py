@@ -9,6 +9,10 @@ from ..base_class import Base
 
 if TYPE_CHECKING:
     from .user import User
+    from .resume_skill import ResumeSkills
+    from .resume_experience import ResumeExperience
+    from .resume_education import ResumeEducation
+    from .resume_projects import ResumeProject
 
 class Resume(Base):
     __tablename__="resumes"
@@ -44,4 +48,24 @@ class Resume(Base):
 
     user:Mapped["User"]=relationship(
         back_populates="resumes",
+    )
+
+    skills:Mapped[list["ResumeSkills"]]=relationship(
+        back_populates="resume",
+        cascade="all,delete-orphan",
+    )
+
+    projects:Mapped[list["ResumeProject"]]=relationship(
+        back_populates="resume",
+        cascade="all,delete-orphan",
+    )
+
+    experiences:Mapped[list["ResumeExperience"]]=relationship(
+        back_populates="resume",
+        cascade="all,delete-orphan",
+    )
+
+    education:Mapped[list["ResumeEducation"]]=relationship(
+        back_populates="resume",
+        cascade="all,delete-orphan",
     )

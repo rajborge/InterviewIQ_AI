@@ -9,6 +9,7 @@ from ..base_class import Base
 
 if TYPE_CHECKING:
     from .resume import Resume
+    from .interview import Interview
 
 class User(Base):
     __tablename__="users"
@@ -56,4 +57,8 @@ class User(Base):
 
     resumes:Mapped[list["Resume"]]=relationship(
         back_populates="users"
+    )
+
+    interview:Mapped[list["Interview"]]=relationship(
+        back_populates="user",
     )
