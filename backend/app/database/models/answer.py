@@ -10,6 +10,7 @@ from ..base_class import Base
 
 if TYPE_CHECKING:
     from .question import Question
+    from .answer_evaluation import AnswerEvaluation
 
 
 class Answer(Base):
@@ -79,4 +80,10 @@ class Answer(Base):
 
     question: Mapped["Question"] = relationship(
         back_populates="answer",
+    )
+
+    evaluation:Mapped["AnswerEvaluation | None"]=relationship(
+        back_populates="answer",
+        cascade="all,delete-orphan",
+        uselist=False,
     )
