@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from .question import Question
     from .interview_evaluation import InterviewEvaluation
     from .communication_analysis import CommunicationAnalysis
+    from .video_analysis import VideoAnalysis
 
 
 class Interview(Base):
@@ -95,6 +96,12 @@ class Interview(Base):
     )
 
     communication_analysis: Mapped["CommunicationAnalysis | None"] = relationship(
+        back_populates="interview",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+    video_analysis: Mapped["VideoAnalysis | None"] = relationship(
         back_populates="interview",
         cascade="all, delete-orphan",
         uselist=False,

@@ -28,6 +28,11 @@ class QuestionSource(str,enum.Enum):
     QUESTION_BANK="question_bank"
     LLM_GENERATED="llm_generated"
 
+class LightingQuality(str, enum.Enum):
+    GOOD = "good"
+    ACCEPTABLE = "acceptable"
+    POOR = "poor"
+
 def db_enum(enum_cls:type[enum.Enum],name:str)->SAEnum:
     return SAEnum(
         enum_cls,

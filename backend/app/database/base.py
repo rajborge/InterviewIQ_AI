@@ -11,5 +11,6 @@ from ..database.models.answer import Answer
 from ..database.models.answer_evaluation import AnswerEvaluation
 from ..database.models.interview_evaluation import InterviewEvaluation
 from ..database.models.communication_analysis import CommunicationAnalysis
+from ..database.models.video_analysis import VideoAnalysis
 
-__all__=["Base","User","Resume","ResumeSkills","ResumeExperience","ResumeProject","ResumeEducation","Interview","Question","Answer","AnswerEvaluation","InterviewEvaluation","CommunicationAnalysis"]
+__all__=["Base","User","Resume","ResumeSkills","ResumeExperience","ResumeProject","ResumeEducation","Interview","Question","Answer","AnswerEvaluation","InterviewEvaluation","CommunicationAnalysis","VideoAnalysis"]
