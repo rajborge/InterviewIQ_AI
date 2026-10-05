@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from .user import User
     from .resume import Resume
     from .question import Question
+    from .interview_evaluation import InterviewEvaluation
+    from .communication_analysis import CommunicationAnalysis
 
 
 class Interview(Base):
@@ -84,4 +86,16 @@ class Interview(Base):
         back_populates="interview",
         cascade="all, delete-orphan",
         order_by="Question.sequence_number",
+    )
+
+    evaluation:Mapped["InterviewEvaluation | None"]=relationship(
+        back_populates="interview",
+        cascade="all,delete-orphan",
+        uselist=False,
+    )
+
+    communication_analysis: Mapped["CommunicationAnalysis | None"] = relationship(
+        back_populates="interview",
+        cascade="all, delete-orphan",
+        uselist=False,
     )
