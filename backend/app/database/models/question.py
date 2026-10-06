@@ -11,9 +11,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..base_class import Base
 from .enums import Difficulty, QuestionSource, RoundType, db_enum
 
+from .answer import Answer
+
 if TYPE_CHECKING:
     from .interview import Interview
-    from .answer import Answer
 
 class Question(Base):
     __tablename__ = "questions"
@@ -124,6 +125,7 @@ class Question(Base):
     )
 
     answer: Mapped["Answer | None"] = relationship(
+        Answer,
         back_populates="question",
         cascade="all, delete-orphan",
         uselist=False,

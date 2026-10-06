@@ -10,7 +10,7 @@ from ..base_class import Base
 if TYPE_CHECKING:
     from .resume import Resume
 
-class ResumeSkills(Base):
+class ResumeSkill(Base):
     __tablename__="resume_skills"
 
     id:Mapped[uuid.UUID]=mapped_column(

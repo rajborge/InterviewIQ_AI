@@ -5,6 +5,14 @@ class Settings(BaseSettings):
     debug:bool=False
     database_url:str
 
+    secret_key:str
+    algorithm:str
+    access_token_expire_minutes:int
+
+    google_client_id: str
+    google_client_secret: str
+    google_rediret_uri: str
+
     model_config=SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

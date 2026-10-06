@@ -9,13 +9,14 @@ from ..base_class import Base
 
 from .enums import Difficulty, InterviewMode, InterviewStatus, InterviewType, db_enum
 
+from .question import Question
+from .interview_evaluation import InterviewEvaluation
+from .communication_analysis import CommunicationAnalysis
+from .video_analysis import VideoAnalysis
+
 if TYPE_CHECKING:
     from .user import User
     from .resume import Resume
-    from .question import Question
-    from .interview_evaluation import InterviewEvaluation
-    from .communication_analysis import CommunicationAnalysis
-    from .video_analysis import VideoAnalysis
 
 
 class Interview(Base):
@@ -78,30 +79,35 @@ class Interview(Base):
     )
 
     user: Mapped["User"] = relationship(
+        "User",
         back_populates="interviews",
     )
 
     resume: Mapped["Resume | None"] = relationship()
 
     questions: Mapped[list["Question"]] = relationship(
+        Question,
         back_populates="interview",
         cascade="all, delete-orphan",
         order_by="Question.sequence_number",
     )
 
     evaluation:Mapped["InterviewEvaluation | None"]=relationship(
+        InterviewEvaluation,
         back_populates="interview",
         cascade="all,delete-orphan",
         uselist=False,
     )
 
     communication_analysis: Mapped["CommunicationAnalysis | None"] = relationship(
+        CommunicationAnalysis,
         back_populates="interview",
         cascade="all, delete-orphan",
         uselist=False,
     )
 
     video_analysis: Mapped["VideoAnalysis | None"] = relationship(
+        VideoAnalysis,
         back_populates="interview",
         cascade="all, delete-orphan",
         uselist=False,

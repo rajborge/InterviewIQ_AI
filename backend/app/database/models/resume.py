@@ -7,12 +7,13 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped,mapped_column,relationship
 from ..base_class import Base
 
+from .resume_skill import ResumeSkill
+from .resume_experience import ResumeExperience
+from .resume_education import ResumeEducation
+from .resume_projects import ResumeProject
+
 if TYPE_CHECKING:
     from .user import User
-    from .resume_skill import ResumeSkills
-    from .resume_experience import ResumeExperience
-    from .resume_education import ResumeEducation
-    from .resume_projects import ResumeProject
 
 class Resume(Base):
     __tablename__="resumes"
@@ -47,25 +48,30 @@ class Resume(Base):
     )
 
     user:Mapped["User"]=relationship(
+        "User",
         back_populates="resumes",
     )
 
-    skills:Mapped[list["ResumeSkills"]]=relationship(
+    skills:Mapped[list["ResumeSkill"]]=relationship(
+        ResumeSkill,
         back_populates="resume",
         cascade="all,delete-orphan",
     )
 
     projects:Mapped[list["ResumeProject"]]=relationship(
+        ResumeProject,
         back_populates="resume",
         cascade="all,delete-orphan",
     )
 
     experiences:Mapped[list["ResumeExperience"]]=relationship(
+        ResumeExperience,
         back_populates="resume",
         cascade="all,delete-orphan",
     )
 
     education:Mapped[list["ResumeEducation"]]=relationship(
+        ResumeEducation,
         back_populates="resume",
         cascade="all,delete-orphan",
     )

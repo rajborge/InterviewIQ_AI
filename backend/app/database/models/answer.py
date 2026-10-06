@@ -8,9 +8,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..base_class import Base
 
+from .answer_evaluation import AnswerEvaluation
+
 if TYPE_CHECKING:
     from .question import Question
-    from .answer_evaluation import AnswerEvaluation
 
 
 class Answer(Base):
@@ -83,6 +84,7 @@ class Answer(Base):
     )
 
     evaluation:Mapped["AnswerEvaluation | None"]=relationship(
+        AnswerEvaluation,
         back_populates="answer",
         cascade="all,delete-orphan",
         uselist=False,

@@ -7,9 +7,9 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import mapped_column,Mapped,relationship
 from ..base_class import Base
 
-if TYPE_CHECKING:
-    from .resume import Resume
-    from .interview import Interview
+from .resume import Resume
+from .interview import Interview
+from .refresh_token import RefreshToken
 
 class User(Base):
     __tablename__="users"
@@ -35,6 +35,8 @@ class User(Base):
         String(100),
         nullable=False,
     )
+    
+    google_id: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
 
     created_at:Mapped[datetime]=mapped_column(
         DateTime(timezone=True),
@@ -55,10 +57,18 @@ class User(Base):
         default=None,
     )
 
-    resumes:Mapped[list["Resume"]]=relationship(
-        back_populates="users"
+    resumes: Mapped[list["Resume"]] = relationship(
+        Resume,
+        back_populates="user",
     )
 
-    interview:Mapped[list["Interview"]]=relationship(
+    interviews: Mapped[list["Interview"]] = relationship(
+        Interview,
         back_populates="user",
+    )
+
+    refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
+        RefreshToken,
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
