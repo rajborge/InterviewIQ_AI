@@ -13,6 +13,7 @@ from app.database.models.interview_evaluation import InterviewEvaluation
 from app.database.models.communication_analysis import CommunicationAnalysis
 from app.database.models.video_analysis import VideoAnalysis
 from app.database.models.refresh_token import RefreshToken
+from app.database.models.oauth_exchange_code import OAuthExchangeCode
 
 __all__=["Base","User","Resume","ResumeSkill","ResumeExperience","ResumeProject","ResumeEducation","Interview","Question","Answer","AnswerEvaluation","InterviewEvaluation","CommunicationAnalysis","VideoAnalysis",
-        "RefreshToken"]
+        "RefreshToken","OAuthExchangeCode"]

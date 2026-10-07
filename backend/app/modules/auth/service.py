@@ -2,16 +2,33 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from datetime import datetime,timezone,timedelta
 import hashlib
+import secrets as secrets_module
+from urllib.parse import urlencode
 
-from app.core.exceptions import EmailAlreadyExistsError,InvalidCredentialsError,OAuthOnlyAccountError,InvalidRefreshTokenError
+import httpx
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
+
+from app.core.exceptions import EmailAlreadyExistsError,InvalidCredentialsError,OAuthOnlyAccountError,InvalidRefreshTokenError,AppError
 from app.core.security import hash_password,create_access_token,generate_refresh_token,verify_password
 
 from app.database.models.user import User
 from app.database.models.refresh_token import RefreshToken
+from app.database.models.oauth_exchange_code import OAuthExchangeCode
 
 from .schemas import UserRegisterRequest,UserLoginRequest
+from app.core.config import settings
 
 REFRESH_TOKEN_EXPIRE_DAYS=30
+
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+EXCHANGE_CODE_EXPIRE_SECONDS = 60
+
+class OAuthError(AppError):
+    def __init__(self, message: str = "Google sign-in failed"):
+        super().__init__(message)
+
 
 def register_user(db:Session,data:UserRegisterRequest)->User:
     existing=db.scalar(select(User).where(User.email==data.email))
@@ -102,3 +119,90 @@ def logout_user(
     if token_row is not None:
         token_row.is_revoked=True
         db.commit()
+
+
+def build_google_auth_url() -> str:
+    params = {
+        "client_id": settings.google_client_id,
+        "redirect_uri": settings.google_redirect_uri,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "access_type": "online",
+        "prompt": "select_account",
+    }
+    return f"{GOOGLE_AUTH_URL}?{urlencode(params)}"
+
+def handle_google_callback(db: Session, code: str) -> str:
+    token_response = httpx.post(
+        GOOGLE_TOKEN_URL,
+        data={
+            "code": code,
+            "client_id": settings.google_client_id,
+            "client_secret": settings.google_client_secret,
+            "redirect_uri": settings.google_redirect_uri,
+            "grant_type": "authorization_code",
+        },
+    )
+    if token_response.status_code != 200:
+        raise OAuthError()
+
+    google_tokens = token_response.json()
+    raw_id_token = google_tokens.get("id_token")
+    if raw_id_token is None:
+        raise OAuthError()
+
+    try:
+        claims = google_id_token.verify_oauth2_token(
+            raw_id_token, google_requests.Request(), settings.google_client_id
+        )
+    except ValueError:
+        raise OAuthError()
+
+    google_sub = claims["sub"]
+    email = claims["email"]
+    name = claims.get("name", email)
+
+    user = db.scalar(select(User).where(User.google_id == google_sub))
+
+    if user is None:
+        user = db.scalar(select(User).where(User.email == email))
+        if user is not None:
+            user.google_id = google_sub  
+        else:
+            user = User(email=email, name=name, password_hash=None, google_id=google_sub)
+            db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    access_token = create_access_token(user_id=str(user.id))
+    raw_refresh_token, refresh_token_hash = generate_refresh_token()
+    db.add(RefreshToken(
+        user_id=user.id,
+        token_hash=refresh_token_hash,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
+    ))
+    db.commit()
+
+    raw_exchange_code = secrets_module.token_urlsafe(32)
+    exchange_code_hash = hashlib.sha256(raw_exchange_code.encode()).hexdigest()
+    db.add(OAuthExchangeCode(
+        code_hash=exchange_code_hash,
+        access_token=access_token,
+        refresh_token=raw_refresh_token,
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=EXCHANGE_CODE_EXPIRE_SECONDS),
+    ))
+    db.commit()
+
+    return raw_exchange_code
+
+def redeem_exchange_code(db: Session, raw_code: str) -> tuple[str, str]:
+    code_hash = hashlib.sha256(raw_code.encode()).hexdigest()
+    row = db.scalar(select(OAuthExchangeCode).where(OAuthExchangeCode.code_hash == code_hash))
+
+    if row is None or row.used or row.expires_at < datetime.now(timezone.utc):
+        raise OAuthError("Invalid or expired exchange code")
+
+    row.used = True
+    db.commit()
+
+    return row.access_token, row.refresh_token
